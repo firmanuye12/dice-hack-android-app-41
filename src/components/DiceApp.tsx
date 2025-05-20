@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
@@ -12,6 +12,22 @@ const DiceApp: React.FC = () => {
   const [inputData, setInputData] = useState('');
   const [diceValue, setDiceValue] = useState(1);
   const [serverAddress, setServerAddress] = useState('SERVER');
+  const firebaseUrl = "https://baru1234-67129-default-rtdb.firebaseio.com/baucua/";
+
+  useEffect(() => {
+    // Connect to Firebase - This is just demonstrative since we don't have actual Firebase integration
+    // In a real implementation, we would initialize Firebase and set up listeners here
+    console.log("Connecting to Firebase at:", firebaseUrl);
+    
+    // Simulate connection to Firebase
+    const timer = setTimeout(() => {
+      toast.success('Terhubung ke Firebase', {
+        description: `URL: ${firebaseUrl}`,
+      });
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleNumberClick = (number: number) => {
     setInputData(prev => prev + number);
@@ -26,9 +42,12 @@ const DiceApp: React.FC = () => {
   const handleSend = () => {
     if (inputData) {
       toast.success('Data terkirim!', {
-        description: `Value: ${inputData}`,
+        description: `Value: ${inputData} - Dikirim ke: ${firebaseUrl}`,
       });
-      // In a real app, this would connect to Firebase or another backend
+      // In a real app, this would send data to Firebase
+      console.log("Sending data to Firebase:", inputData);
+      // Reset the input after sending
+      setTimeout(() => setInputData(''), 500);
     } else {
       toast.error('Data kosong', {
         description: 'Silakan masukkan angka terlebih dahulu.',

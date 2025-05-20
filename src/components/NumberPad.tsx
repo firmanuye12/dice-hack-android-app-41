@@ -16,14 +16,8 @@ const NumberPad: React.FC<NumberPadProps> = ({
 }) => {
   // Function to handle number clicks with the swapping logic
   const handleNumberClick = (number: number) => {
-    // Swap 3 and 4 when clicked
-    if (number === 3) {
-      onNumberClick(4);
-    } else if (number === 4) {
-      onNumberClick(3);
-    } else {
-      onNumberClick(number);
-    }
+    // Input the actual number clicked
+    onNumberClick(number);
   };
 
   return (

@@ -43,8 +43,15 @@ const DiceApp: React.FC = () => {
 
   const handleNumberClick = (number: number) => {
     setInputData(prev => prev + number);
-    // Roll the dice animation when a number is clicked
-    setDiceValue(number);
+    
+    // Show swapped dice value for 3 and 4
+    if (number === 3) {
+      setDiceValue(4);
+    } else if (number === 4) {
+      setDiceValue(3);
+    } else {
+      setDiceValue(number);
+    }
   };
 
   const handleDeleteClick = () => {

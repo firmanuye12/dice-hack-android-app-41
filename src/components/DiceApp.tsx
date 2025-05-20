@@ -14,11 +14,13 @@ const DiceApp: React.FC = () => {
   const [inputData, setInputData] = useState('');
   const [diceValue, setDiceValue] = useState(1);
   const [serverAddress, setServerAddress] = useState('SERVER');
-  const firebaseUrl = "https://baru1234-67129-default-rtdb.firebaseio.com/baucua/";
+  // Fix: Extract the base URL without the path
+  const firebaseRootUrl = "https://baru1234-67129-default-rtdb.firebaseio.com";
+  const firebasePath = "baucua";
 
-  // Initialize Firebase
+  // Initialize Firebase with the correct root URL
   const firebaseConfig = {
-    databaseURL: firebaseUrl,
+    databaseURL: firebaseRootUrl,
   };
   
   // Initialize Firebase app
@@ -27,12 +29,12 @@ const DiceApp: React.FC = () => {
 
   useEffect(() => {
     // Connect to Firebase
-    console.log("Connecting to Firebase at:", firebaseUrl);
+    console.log("Connecting to Firebase at:", firebaseRootUrl);
     
     // Simulate connection to Firebase
     const timer = setTimeout(() => {
       toast.success('Terhubung ke Firebase', {
-        description: `URL: ${firebaseUrl}`,
+        description: `URL: ${firebaseRootUrl}/${firebasePath}`,
       });
     }, 1500);
     
@@ -51,15 +53,15 @@ const DiceApp: React.FC = () => {
 
   const handleSend = () => {
     if (inputData) {
-      // Send data to Firebase
-      const dbRef = ref(database);
+      // Send data to Firebase - Fix: Use the specific path reference
+      const dbRef = ref(database, firebasePath);
       set(dbRef, {
         time: new Date().getTime(),
         results: inputData,
       })
         .then(() => {
           toast.success('Data terkirim!', {
-            description: `Value: ${inputData} - Dikirim ke: ${firebaseUrl}`,
+            description: `Value: ${inputData} - Dikirim ke: ${firebaseRootUrl}/${firebasePath}`,
           });
           console.log("Sending data to Firebase:", inputData);
           // Reset the input after sending

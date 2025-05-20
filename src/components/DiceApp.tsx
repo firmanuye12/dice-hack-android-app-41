@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import ConnectionStatus from './ConnectionStatus';
 import NumberPad from './NumberPad';
 import DiceDisplay from './DiceDisplay';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, set } from 'firebase/database';
 
 const DiceApp: React.FC = () => {
   const [inputData, setInputData] = useState('');
@@ -14,9 +16,17 @@ const DiceApp: React.FC = () => {
   const [serverAddress, setServerAddress] = useState('SERVER');
   const firebaseUrl = "https://baru1234-67129-default-rtdb.firebaseio.com/baucua/";
 
+  // Initialize Firebase
+  const firebaseConfig = {
+    databaseURL: firebaseUrl,
+  };
+  
+  // Initialize Firebase app
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
   useEffect(() => {
-    // Connect to Firebase - This is just demonstrative since we don't have actual Firebase integration
-    // In a real implementation, we would initialize Firebase and set up listeners here
+    // Connect to Firebase
     console.log("Connecting to Firebase at:", firebaseUrl);
     
     // Simulate connection to Firebase
@@ -41,13 +51,26 @@ const DiceApp: React.FC = () => {
 
   const handleSend = () => {
     if (inputData) {
-      toast.success('Data terkirim!', {
-        description: `Value: ${inputData} - Dikirim ke: ${firebaseUrl}`,
-      });
-      // In a real app, this would send data to Firebase
-      console.log("Sending data to Firebase:", inputData);
-      // Reset the input after sending
-      setTimeout(() => setInputData(''), 500);
+      // Send data to Firebase
+      const dbRef = ref(database);
+      set(dbRef, {
+        time: new Date().getTime(),
+        results: inputData,
+      })
+        .then(() => {
+          toast.success('Data terkirim!', {
+            description: `Value: ${inputData} - Dikirim ke: ${firebaseUrl}`,
+          });
+          console.log("Sending data to Firebase:", inputData);
+          // Reset the input after sending
+          setTimeout(() => setInputData(''), 500);
+        })
+        .catch((error) => {
+          toast.error('Gagal mengirim data', {
+            description: `Error: ${error.message}`,
+          });
+          console.error("Error sending data to Firebase:", error);
+        });
     } else {
       toast.error('Data kosong', {
         description: 'Silakan masukkan angka terlebih dahulu.',

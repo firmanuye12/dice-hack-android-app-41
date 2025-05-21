@@ -8,14 +8,15 @@ import ConnectionStatus from './ConnectionStatus';
 import NumberPad from './NumberPad';
 import DiceDisplay from './DiceDisplay';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set } from 'firebase/database';
+import { getDatabase, ref, set, onValue } from 'firebase/database';
 
 const DiceApp: React.FC = () => {
   const [inputData, setInputData] = useState('');
   const [diceValue, setDiceValue] = useState(1);
   const [serverAddress, setServerAddress] = useState('SERVER');
   const [isConnected, setIsConnected] = useState(false);
-  // Fix: Extract the base URL without the path
+  const [firebaseConnected, setFirebaseConnected] = useState(false);
+  // Menggunakan URL Firebase yang sama dengan APK
   const firebaseRootUrl = "https://baru1234-67129-default-rtdb.firebaseio.com";
   const firebasePath = "baucua";
 
@@ -30,26 +31,45 @@ const DiceApp: React.FC = () => {
 
   useEffect(() => {
     // Connect to Firebase
-    console.log("Connecting to Firebase at:", firebaseRootUrl);
+    console.log("Menghubungkan ke Firebase:", firebaseRootUrl);
     
-    // Simulate connection to Firebase
-    const timer = setTimeout(() => {
-      setIsConnected(true);
+    // Membuat referensi ke Firebase
+    const dbRef = ref(database, firebasePath);
+    
+    // Uji koneksi ke Firebase dengan mencoba mendapatkan data
+    onValue(dbRef, (snapshot) => {
+      console.log("Koneksi ke Firebase berhasil, data terakhir:", snapshot.val());
+      setFirebaseConnected(true);
       toast.success('Terhubung ke Firebase', {
         description: `URL: ${firebaseRootUrl}/${firebasePath}`,
       });
-    }, 1500);
+    }, (error) => {
+      console.error("Gagal terhubung ke Firebase:", error);
+      setFirebaseConnected(false);
+      toast.error('Gagal terhubung ke Firebase', {
+        description: `Error: ${error.message}`,
+      });
+    });
     
     // Set up connection status check
-    window.addEventListener('online', () => setIsConnected(true));
-    window.addEventListener('offline', () => setIsConnected(false));
+    window.addEventListener('online', handleOnlineStatusChange);
+    window.addEventListener('offline', handleOnlineStatusChange);
+    
+    // Initial check
+    handleOnlineStatusChange();
     
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('online', () => setIsConnected(true));
-      window.removeEventListener('offline', () => setIsConnected(false));
+      window.removeEventListener('online', handleOnlineStatusChange);
+      window.removeEventListener('offline', handleOnlineStatusChange);
     };
   }, []);
+
+  // Cek status koneksi internet dan Firebase
+  const handleOnlineStatusChange = () => {
+    const isOnline = navigator.onLine;
+    console.log("Status koneksi internet:", isOnline ? "Online" : "Offline");
+    setIsConnected(isOnline && firebaseConnected);
+  };
 
   const handleNumberClick = (number: number) => {
     setInputData(prev => prev + number);
@@ -64,25 +84,28 @@ const DiceApp: React.FC = () => {
 
   const handleSend = () => {
     if (inputData) {
-      // Send data to Firebase - Fix: Use the specific path reference
+      // Kirim data ke Firebase dalam format yang kompatibel dengan APK
       const dbRef = ref(database, firebasePath);
+      
+      // PENTING: Mengubah format data agar sesuai dengan yang diharapkan oleh APK
+      // APK mengharapkan results sebagai string (seperti "123")
       set(dbRef, {
         time: new Date().getTime(),
-        results: inputData,
+        results: inputData, // Kirim inputData langsung sebagai string
       })
         .then(() => {
           toast.success('Sukses!', {
             description: `Data: ${inputData} berhasil dikirim ke server`,
           });
-          console.log("Sending data to Firebase:", inputData);
-          // Reset the input after sending
+          console.log("Mengirim data ke Firebase:", inputData);
+          // Reset input setelah mengirim
           setTimeout(() => setInputData(''), 500);
         })
         .catch((error) => {
           toast.error('Gagal mengirim data', {
             description: `Error: ${error.message}`,
           });
-          console.error("Error sending data to Firebase:", error);
+          console.error("Error mengirim data ke Firebase:", error);
         });
     } else {
       toast.error('Data kosong', {

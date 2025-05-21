@@ -16,7 +16,7 @@ const DiceApp: React.FC = () => {
   const [serverAddress, setServerAddress] = useState('SERVER');
   const [isConnected, setIsConnected] = useState(false);
   const [firebaseConnected, setFirebaseConnected] = useState(false);
-  // Menggunakan URL Firebase yang sama dengan APK
+  // URL Firebase yang sama dengan yang digunakan APK
   const firebaseRootUrl = "https://baru1234-67129-default-rtdb.firebaseio.com";
   const firebasePath = "baucua";
 
@@ -40,12 +40,14 @@ const DiceApp: React.FC = () => {
     onValue(dbRef, (snapshot) => {
       console.log("Koneksi ke Firebase berhasil, data terakhir:", snapshot.val());
       setFirebaseConnected(true);
+      setIsConnected(true); // Update koneksi secara langsung saat berhasil
       toast.success('Terhubung ke Firebase', {
         description: `URL: ${firebaseRootUrl}/${firebasePath}`,
       });
     }, (error) => {
       console.error("Gagal terhubung ke Firebase:", error);
       setFirebaseConnected(false);
+      setIsConnected(false); // Update koneksi secara langsung saat gagal
       toast.error('Gagal terhubung ke Firebase', {
         description: `Error: ${error.message}`,
       });
@@ -68,7 +70,14 @@ const DiceApp: React.FC = () => {
   const handleOnlineStatusChange = () => {
     const isOnline = navigator.onLine;
     console.log("Status koneksi internet:", isOnline ? "Online" : "Offline");
-    setIsConnected(isOnline && firebaseConnected);
+    // Hanya ubah status koneksi jika tidak online
+    if (!isOnline) {
+      setIsConnected(false);
+      toast.error('Koneksi Internet Terputus', {
+        description: 'Mohon periksa koneksi internet Anda',
+      });
+    }
+    // Jika online, status koneksi akan diperbarui oleh callback Firebase onValue
   };
 
   const handleNumberClick = (number: number) => {
@@ -95,7 +104,8 @@ const DiceApp: React.FC = () => {
       })
         .then(() => {
           toast.success('Sukses!', {
-            description: `Data: ${inputData} berhasil dikirim ke server`,
+            description: `Data: ${inputData} berhasil dikirim ke APK dadu`,
+            duration: 3000,
           });
           console.log("Mengirim data ke Firebase:", inputData);
           // Reset input setelah mengirim
@@ -104,6 +114,7 @@ const DiceApp: React.FC = () => {
         .catch((error) => {
           toast.error('Gagal mengirim data', {
             description: `Error: ${error.message}`,
+            duration: 5000,
           });
           console.error("Error mengirim data ke Firebase:", error);
         });
@@ -115,11 +126,31 @@ const DiceApp: React.FC = () => {
   };
 
   const handleLocalhost = () => {
-    toast.info('Membuka koneksi server...', {
-      description: `Menghubungkan ke ${serverAddress}:8080`,
-    });
-    // In a real app, this would open a connection to the server
-    setIsConnected(true);
+    if (!isConnected) {
+      toast.info('Mencoba menghubungkan ulang...', {
+        description: `Menghubungkan ke Firebase: ${firebaseRootUrl}/${firebasePath}`,
+      });
+      
+      // Coba sambungkan ulang ke Firebase
+      const dbRef = ref(database, firebasePath);
+      onValue(dbRef, (snapshot) => {
+        console.log("Koneksi ke Firebase berhasil setelah percobaan ulang:", snapshot.val());
+        setFirebaseConnected(true);
+        setIsConnected(true);
+        toast.success('Berhasil terhubung kembali!', {
+          description: `URL: ${firebaseRootUrl}/${firebasePath}`,
+        });
+      }, (error) => {
+        console.error("Gagal menghubungkan ulang ke Firebase:", error);
+        toast.error('Gagal menghubungkan ulang', {
+          description: error.message,
+        });
+      });
+    } else {
+      toast.info('Sudah terhubung', {
+        description: `Anda sudah terhubung ke Firebase: ${firebaseRootUrl}/${firebasePath}`,
+      });
+    }
   };
 
   return (
@@ -136,9 +167,9 @@ const DiceApp: React.FC = () => {
         
         <CardContent className="pt-6 space-y-6">
           <div className="flex justify-between items-center">
-            <p className="text-sm font-medium text-foreground/70">Server: <span className="font-bold">{serverAddress}</span></p>
+            <p className="text-sm font-medium text-foreground/70">Server: <span className="font-bold">{firebaseRootUrl}/{firebasePath}</span></p>
             <Button size="sm" variant="outline" onClick={handleLocalhost}>
-              Connect Server
+              {isConnected ? "Refresh Koneksi" : "Hubungkan Ulang"}
             </Button>
           </div>
           
@@ -160,6 +191,7 @@ const DiceApp: React.FC = () => {
               <Button 
                 onClick={handleSend}
                 className="bg-primary hover:bg-primary/90 text-white"
+                disabled={!isConnected || !inputData}
               >
                 Kirim
               </Button>

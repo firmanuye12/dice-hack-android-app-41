@@ -14,22 +14,23 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 }) => {
   return (
     <div className={cn(
-      "flex items-center justify-center p-3 rounded-lg bg-secondary/50 backdrop-blur-sm gap-2", 
+      "flex items-center justify-center p-3 rounded-lg backdrop-blur-sm gap-2", 
+      isConnected ? "bg-green-500/20" : "bg-red-500/20",
       className
     )}>
       <div className={cn(
-        "status-indicator animate-status-pulse",
+        "h-3 w-3 rounded-full animate-pulse",
         isConnected ? "bg-green-500" : "bg-red-500"
       )}></div>
       {isConnected ? (
         <>
           <Wifi size={18} className="text-green-500" />
-          <span className="text-sm font-medium text-green-500">Terhubung</span>
+          <span className="text-sm font-medium text-green-500">Terhubung ke APK Dadu</span>
         </>
       ) : (
         <>
           <WifiOff size={18} className="text-red-500" />
-          <span className="text-sm font-medium text-red-500">Tidak Terhubung</span>
+          <span className="text-sm font-medium text-red-500">Tidak Terhubung ke APK Dadu</span>
         </>
       )}
     </div>

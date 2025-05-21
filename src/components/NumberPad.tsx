@@ -14,21 +14,15 @@ const NumberPad: React.FC<NumberPadProps> = ({
   onDeleteClick,
   className 
 }) => {
-  // Function to handle number clicks with the swapping logic
-  const handleNumberClick = (number: number) => {
-    // Input the actual number clicked
-    onNumberClick(number);
-  };
-
   return (
-    <div className={cn("number-pad", className)}>
+    <div className={cn("number-pad grid grid-cols-3 gap-2", className)}>
       {[1, 2, 3, 4, 5, 6].map((number) => (
         <Button
           key={number}
-          onClick={() => handleNumberClick(number)}
+          onClick={() => onNumberClick(number)}
           className={cn(
             "number-button bg-dice-" + number,
-            "hover:bg-opacity-90 text-white"
+            "hover:bg-opacity-90 text-white text-xl font-bold"
           )}
           variant="ghost"
         >

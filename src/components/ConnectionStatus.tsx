@@ -1,35 +1,37 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
+import { Wifi, WifiOff } from 'lucide-react';
 
 interface ConnectionStatusProps {
   className?: string;
+  isConnected: boolean;
 }
 
-const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className }) => {
-  const [isConnected, setIsConnected] = useState(false);
-
-  useEffect(() => {
-    // For demo purposes - simulate connection changes
-    const interval = setInterval(() => {
-      setIsConnected(prev => !prev);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
+const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ 
+  className,
+  isConnected 
+}) => {
   return (
     <div className={cn(
-      "flex items-center justify-center p-3 rounded-lg bg-secondary/50 backdrop-blur-sm", 
+      "flex items-center justify-center p-3 rounded-lg bg-secondary/50 backdrop-blur-sm gap-2", 
       className
     )}>
       <div className={cn(
         "status-indicator animate-status-pulse",
         isConnected ? "bg-green-500" : "bg-red-500"
       )}></div>
-      <span className="text-sm font-medium">
-        {isConnected ? "Terhubung" : "Tidak Terhubung"}
-      </span>
+      {isConnected ? (
+        <>
+          <Wifi size={18} className="text-green-500" />
+          <span className="text-sm font-medium text-green-500">Terhubung</span>
+        </>
+      ) : (
+        <>
+          <WifiOff size={18} className="text-red-500" />
+          <span className="text-sm font-medium text-red-500">Tidak Terhubung</span>
+        </>
+      )}
     </div>
   );
 };

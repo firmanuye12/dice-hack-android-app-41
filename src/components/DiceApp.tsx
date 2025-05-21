@@ -14,6 +14,7 @@ const DiceApp: React.FC = () => {
   const [inputData, setInputData] = useState('');
   const [diceValue, setDiceValue] = useState(1);
   const [serverAddress, setServerAddress] = useState('SERVER');
+  const [isConnected, setIsConnected] = useState(false);
   // Fix: Extract the base URL without the path
   const firebaseRootUrl = "https://baru1234-67129-default-rtdb.firebaseio.com";
   const firebasePath = "baucua";
@@ -33,25 +34,28 @@ const DiceApp: React.FC = () => {
     
     // Simulate connection to Firebase
     const timer = setTimeout(() => {
+      setIsConnected(true);
       toast.success('Terhubung ke Firebase', {
         description: `URL: ${firebaseRootUrl}/${firebasePath}`,
       });
     }, 1500);
     
-    return () => clearTimeout(timer);
+    // Set up connection status check
+    window.addEventListener('online', () => setIsConnected(true));
+    window.addEventListener('offline', () => setIsConnected(false));
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('online', () => setIsConnected(true));
+      window.removeEventListener('offline', () => setIsConnected(false));
+    };
   }, []);
 
   const handleNumberClick = (number: number) => {
     setInputData(prev => prev + number);
     
-    // Show swapped dice value for 3 and 4
-    if (number === 3) {
-      setDiceValue(4);
-    } else if (number === 4) {
-      setDiceValue(3);
-    } else {
-      setDiceValue(number);
-    }
+    // Set the dice value to match the number clicked
+    setDiceValue(number);
   };
 
   const handleDeleteClick = () => {
@@ -67,8 +71,8 @@ const DiceApp: React.FC = () => {
         results: inputData,
       })
         .then(() => {
-          toast.success('Data terkirim!', {
-            description: `Value: ${inputData} - Dikirim ke: ${firebaseRootUrl}/${firebasePath}`,
+          toast.success('Sukses!', {
+            description: `Data: ${inputData} berhasil dikirim ke server`,
           });
           console.log("Sending data to Firebase:", inputData);
           // Reset the input after sending
@@ -92,6 +96,7 @@ const DiceApp: React.FC = () => {
       description: `Menghubungkan ke ${serverAddress}:8080`,
     });
     // In a real app, this would open a connection to the server
+    setIsConnected(true);
   };
 
   return (
@@ -114,7 +119,7 @@ const DiceApp: React.FC = () => {
             </Button>
           </div>
           
-          <ConnectionStatus />
+          <ConnectionStatus isConnected={isConnected} />
           
           <DiceDisplay value={diceValue} />
           
@@ -152,7 +157,7 @@ const DiceApp: React.FC = () => {
         </CardContent>
         
         <CardFooter className="border-t border-accent/10 pt-4 flex flex-col items-center justify-center">
-          <p className="text-sm text-foreground/60">Modern Dice Controller v1.0</p>
+          <p className="text-sm text-foreground/60">Modern Dice Controller v1.0 by udin</p>
         </CardFooter>
       </Card>
     </div>

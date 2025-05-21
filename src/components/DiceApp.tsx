@@ -13,7 +13,7 @@ import { getDatabase, ref, set, onValue } from 'firebase/database';
 const DiceApp: React.FC = () => {
   const [inputData, setInputData] = useState('');
   const [diceValue, setDiceValue] = useState(1);
-  const [serverAddress, setServerAddress] = useState('SERVER');
+  const [serverAddress, setServerAddress] = useState('Ok');
   const [isConnected, setIsConnected] = useState(false);
   const [firebaseConnected, setFirebaseConnected] = useState(false);
   // URL Firebase yang sama dengan yang digunakan APK
@@ -167,7 +167,7 @@ const DiceApp: React.FC = () => {
         
         <CardContent className="pt-6 space-y-6">
           <div className="flex justify-between items-center">
-            <p className="text-sm font-medium text-foreground/70">Server: <span className="font-bold">{firebaseRootUrl}/{firebasePath}</span></p>
+            <p className="text-sm font-medium text-foreground/70">Server: <span className="font-bold">{serverAddress}</span></p>
             <Button size="sm" variant="outline" onClick={handleLocalhost}>
               {isConnected ? "Refresh Koneksi" : "Hubungkan Ulang"}
             </Button>
